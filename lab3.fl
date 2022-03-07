@@ -1,0 +1,302 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0302 
+header_name {.h} 
+code_name {.cxx}
+comment {//* I included .H file in order to search wine for this function.
+Also I made four backgrounds to let user choose. When they 
+click go button, the interface will change to whatever they
+selected.} {in_source in_header
+} 
+
+decl {\#include "Wine.h"} {public global
+} 
+
+decl {\#include <iostream>} {public global
+} 
+
+decl {\#include <iomanip>} {public global
+} 
+
+decl {\#include <cstdlib>} {public global
+} 
+
+decl {\#include <fstream>} {public global
+} 
+
+decl {\#include <string>} {public global
+} 
+
+decl {\#include <cstring>} {public global
+} 
+
+decl {\#include <sstream>} {public global
+} 
+
+decl {using namespace std;} {public global
+} 
+
+decl {const int MAX_SIZE = 100;} {private local
+} 
+
+decl {Wine wineList[MAX_SIZE];} {private local
+} 
+
+Function {parse_line(string line)} {open return_type Wine
+} {
+  code {/*
+This function read the size of the word and it goes over and over until it meets ";"
+It will clear the position and convert string to numbers.
+*/
+Wine wine;                         
+                      
+    size_t pos;                                               
+    pos = line.find(";");                    
+    wine.wineName = line.substr(0,pos);     
+    line.erase(0,pos+1);                     
+    pos = line.find(";");                     
+    wine.vintage = atoi(line.substr(0,pos).c_str());     
+    line.erase(0,pos+1);
+    pos = line.find(";");
+    wine.rating = atoi(line.substr(0,pos).c_str());        
+    line.erase(0,pos+1);
+    pos = line.find(";");
+    wine.price = atof(line.substr(0,pos).c_str());     
+    line.erase(0,pos+1);
+    return wine;} {}
+} 
+
+Function {printWine(Wine wine)} {open return_type void
+} {
+  code {cout << setw(50) << wine.wineName << setw(10) << wine.vintage << setw(10) << wine.rating << setw(10) << wine.price << endl;
+return;
+//Sets the width of wine names to 50 and 10 width to vintage and price. Then cout those texts.} {}
+} 
+
+Function {} {open
+} {
+  code {/*
+This function will open the input file and read one line at a time
+and also it will pass the line to another function parseline to parse the line 
+into individual field
+*/			
+
+ifstream infile;            //open the file
+
+    infile.open("winelist.txt"); 
+    if(!infile.is_open())
+        cout << "No file" << endl;
+    int i = 0;
+    string line;         
+    while (getline(infile,line))    // Read the whole file
+    {
+        wineList[i] = parse_line(line);// enter those input to array
+              i++;
+    }} {}
+  Fl_Window ratewindow {open
+    xywh {569 453 710 570} type Double color 31 hide
+  } {
+    Fl_Box background1 {
+      image {../wine.jpg} xywh {-15 -5 710 575} box UP_BOX color 7 labelcolor 80
+    }
+    Fl_Button Return {
+      label back
+      callback {ratewindow->hide();
+Home->show();}
+      xywh {485 500 120 45} box ROUND_UP_BOX color 20 labelfont 11 labelsize 19
+    }
+    Fl_Box {} {
+      label {Vintage Rating}
+      xywh {195 20 250 30} color 0 labelfont 7 labelsize 19 labelcolor 80
+    }
+    Fl_Value_Input input1 {
+      label {First number}
+      xywh {365 78 80 37} labelfont 11 labelsize 16 labelcolor 80
+    }
+    Fl_Value_Input input2 {
+      label {Second number}
+      xywh {365 148 80 37} labelfont 11 labelsize 16 labelcolor 120
+    }
+    Fl_Button {} {
+      label Go
+      callback {string str;
+ostringstream os;
+int first, second;
+int countNumber = 0;
+double sum = 0;
+double avePrice = 0;
+
+first = input1->value();
+second = input2->value();
+
+// print the header 
+	os << left << setw(50) << "Wine Name"
+        << left << setw(10) << "Vintage"
+		<< left << setw(10) << "Rating"
+		<< left << "Price" << endl;
+	os << left << setw(50) << string(40, '-')
+        << left << setw(10) << string(7, '-')
+        << left << setw(10) << string(6, '-')
+         << left << string(5, '-') << endl;
+
+ // these two loops compare the value of the variable to get the number of th wine,
+ // caculate the average  price of them,total number of the  qulified wine.
+ 
+
+for (int i =0; i<MAX_SIZE; i++)
+{
+   if (wineList[i].rating >= first && wineList[i].rating <= second)
+		{
+
+                     os << left << setw(50) << wineList[i].wineName << setw(10) << wineList[i].vintage << setw(5) << wineList[i].rating << setw(5) << wineList[i].price << endl;		
+		     countNumber++;
+		     sum += wineList[i].price;
+		}
+}
+os << "\\nTotal number of wine between the selected range is " << countNumber << endl;
+	if (countNumber !=0)
+	   avePrice = sum / countNumber;
+	os << "\\nAverage price for the selected wines is $: " <<setprecision(4)<< avePrice << endl<<endl;;
+
+str = os.str();
+Fl_Text_Buffer *buff = new Fl_Text_Buffer();  // allocate memory for text diaplay
+buff->text(str.c_str());  // convert to c_str
+rateshow->buffer(buff);  // display in the text display window}
+      xywh {60 500 110 50} color 20 labelfont 11 labelsize 19
+    }
+    Fl_Text_Display rateshow {
+      xywh {10 205 690 280} box UP_BOX color 215
+    }
+  }
+  Fl_Window pricewindow {open
+    xywh {569 453 710 570} type Double box UP_BOX color 31 hide
+  } {
+    Fl_Box background2 {
+      image {../wine.jpg} xywh {0 0 715 580} box UP_BOX color 7
+    }
+    Fl_Box {} {
+      label {Vintage Price}
+      xywh {220 25 250 30} labelfont 7 labelsize 19 labelcolor 80
+    }
+    Fl_Value_Input input3 {
+      label {input first number}
+      xywh {390 83 80 37} labelfont 11 labelsize 16 labelcolor 80
+    }
+    Fl_Value_Input input4 {
+      label {input second number}
+      xywh {390 148 80 37} labelfont 11 labelsize 16 labelcolor 80
+    }
+    Fl_Button {} {
+      label Go
+      callback {string str;
+ostringstream os;
+int first, second;
+int countNumber = 0;
+double sum = 0;
+double avePrice = 0;
+
+first = input3->value();
+second = input4->value();
+
+// print the hearder
+	os << left << setw(50) << "Wine Name"
+        << left << setw(10) << "Vintage"
+		<< left << setw(10) << "Rating"
+		<< left << "Price" << endl;
+	os << left << setw(50) << string(40, '-')
+        << left << setw(10) << string(7, '-')
+        << left << setw(10) << string(6, '-')
+         << left << string(5, '-') << endl;
+
+ // these two loops compare the value of the variable to get the number of th wine,
+ // caculate the average  price of them,total number of the  qulified wine.
+ 
+for (int i =0; i<MAX_SIZE; i++)
+{
+   if (wineList[i].price >= first && wineList[i].price <= second)
+		{
+
+                     os << left << setw(50) << wineList[i].wineName << setw(10) << wineList[i].vintage << setw(5) << wineList[i].rating << setw(5) << wineList[i].price << endl;		
+		     countNumber++;
+		     sum += wineList[i].price;
+		}
+}
+os << "\\nTotal number of wine between the selected range is " << countNumber << endl;
+	if (countNumber !=0)
+	   avePrice = sum / countNumber;
+	os << "\\nAverage price for the selected wines is $: " <<setprecision(4)<< avePrice << endl<<endl;;
+
+str = os.str();
+Fl_Text_Buffer *buff = new Fl_Text_Buffer();  // allocate memory for text diaplay
+buff->text(str.c_str());  // convert to c_str
+priceshow ->buffer(buff);} selected
+      xywh {55 505 120 55} box ROUND_UP_BOX color 20 labelfont 11 labelsize 19
+    }
+    Fl_Text_Display priceshow {
+      xywh {15 220 690 280} box UP_BOX color 215 selection_color 255 textfont 8
+    }
+    Fl_Button Return2 {
+      label back
+      callback {pricewindow->hide();
+Home->show();}
+      xywh {465 505 129 55} box ROUND_UP_BOX color 20 labelfont 7 labelsize 19
+    }
+  }
+  Fl_Window errorWindow {
+    label Error open
+    xywh {191 764 275 105} type Double color 31 labelcolor 31 hide
+  } {
+    Fl_Box {} {
+      label {ERROR!}
+      xywh {40 23 201 17} labelfont 7 labelcolor 1
+    }
+    Fl_Button {} {
+      label back
+      callback {o->parent()->hide();
+Home->show();}
+      xywh {80 50 95 35} box ROUND_UP_BOX color 29 labelfont 7
+    }
+  }
+  Fl_Window Home {open
+    xywh {779 523 500 500} type Double box UP_BOX color 47 labelfont 11 labelsize 16 labelcolor 23 hide
+  } {
+    Fl_Box background3 {
+      image {../wine.jpg} xywh {0 0 500 500} box UP_BOX color 7 align 128
+    }
+    Fl_Box {} {
+      label {Choose a program}
+      xywh {95 20 313 70} box PLASTIC_ROUND_DOWN_BOX color 29 labelsize 24
+    }
+    Fl_Group {} {open
+      xywh {45 125 320 220}
+    } {
+      Fl_Round_Button Price {
+        label {Choose your price range }
+        xywh {125 150 225 35} type Radio box ROUND_UP_BOX down_box ROUND_DOWN_BOX color 29
+      }
+      Fl_Round_Button Rating {
+        label {Choose your rating}
+        xywh {150 205 170 35} type Radio box ROUND_UP_BOX down_box ROUND_DOWN_BOX color 29
+      }
+      Fl_Round_Button quit {
+        label Quit
+        xywh {190 260 75 35} type Radio box ROUND_UP_BOX down_box ROUND_DOWN_BOX color 29
+      }
+    }
+    Fl_Button {} {
+      label Go
+      callback {Home->hide();
+
+//Basically to let users choose and goes to the option that they selected.
+if(Price->value()){
+	pricewindow->show();
+}else if(Rating->value()){
+	ratewindow->show();
+;}else if (quit->value()) {
+ exit(0);
+}else{
+	errorWindow->show();
+}}
+      xywh {160 330 160 80} box ROUND_UP_BOX color 20 labelfont 11 labelsize 16 hotspot
+    }
+  }
+} 
